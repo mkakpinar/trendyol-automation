@@ -15,14 +15,15 @@ class CategoryPageLocators(object):
     CATEGORY_PAGES = [(By.CSS_SELECTOR, '#item2'), (By.CSS_SELECTOR, '#item3'), (By.CSS_SELECTOR, '#item4'),
                       (By.CSS_SELECTOR, '#item5'), (By.CSS_SELECTOR, '#item6'), (By.CSS_SELECTOR, '#item7'),
                       (By.CSS_SELECTOR, '#item8'), (By.CSS_SELECTOR, '#item9'), (By.CSS_SELECTOR, '#item10')]
-    CATEGORY_PAGES = [(By.CSS_SELECTOR, '#item10')]
+
     CATEGORY_PAGE_IMAGE_LOCATORS = ['.bigBoutiqueImage', '.littleBoutiqueImage']
-    CATEGORY_PAGE_IMAGE_LOCATORS = ['.bigBoutiqueImage']
+    CATEGORY_PAGE_PLACE_HOLDER_IMAGE_PATHS = ['bbph.png', 'lbph.jpg']
 
 
 class BoutiquePageLocators(object):
     BOUTIQUE_PAGE_IMAGE_LOCATORS = ['.prc-picture']
     BOUTIQUE_LOCATOR = (By.CSS_SELECTOR, '.butik-large-image')
+    BOUTIQUE_PAGE_PLACE_HOLDER_IMAGE_PATH = ['defaultBoutiquePlaceholderWithoutBorder.jpg']
 
 
 class ProductPageLocators(object):

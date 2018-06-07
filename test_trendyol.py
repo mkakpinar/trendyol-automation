@@ -6,10 +6,9 @@ import selenium.webdriver.support.ui as ui
 from selenium.webdriver.support import expected_conditions as ec
 import time
 from selenium.webdriver.common.action_chains import ActionChains
-import requests
 
 
-class TrendyolAutomationTests(unittest.TestCase, ):
+class TrendyolAutomationTests(unittest.TestCase):
 
     def setUp(self):
 
@@ -19,7 +18,7 @@ class TrendyolAutomationTests(unittest.TestCase, ):
     def init_driver(self, desired_driver):
 
         if desired_driver == 'chrome':
-            self.driver = webdriver.Chrome()
+            self.driver = webdriver.Chrome(settings.chrome_driver_path)
         elif desired_driver == 'firefox':
             self.driver = webdriver.Firefox()
         elif desired_driver == 'opera':
@@ -55,10 +54,11 @@ class TrendyolAutomationTests(unittest.TestCase, ):
 
     def smooth_scroll_to_bottom(self):
 
-        scroll_animation_time = 25
-        self.driver.execute_script(
-            "$('html, body').animate({ scrollTop: $('#footer').offset().top }, 25000);")
-        time.sleep(scroll_animation_time)
+        time_to_scroll = self.driver.execute_script(
+            "var distancetofooter = Math.abs($(document).scrollTop() - $('#footer').offset().top);"
+            "var timetoscroll = distancetofooter  + 1000;"
+            "$('html, body').animate({ scrollTop: $('#footer').offset().top }, timetoscroll); return timetoscroll;")
+        time.sleep(time_to_scroll / 1000)
 
     def scroll_to_top(self):
 
@@ -66,21 +66,28 @@ class TrendyolAutomationTests(unittest.TestCase, ):
         actions = ActionChains(self.driver)
         actions.move_to_element(element).perform()
 
-    def check_image_load(self, image_list):
+    def check_image_load(self, image_list, place_holder_image_path):
 
         for image in image_list:
             image_src = image.get_attribute('src')
-            if requests.get(image_src).status_code != 200:
-                print image_src + " IS NOT LOADED"
+            image_size = self.driver.execute_script(
+                "return arguments[0].complete && typeof arguments[0].naturalWidth !='undefined' && arguments[0].naturalWidth > 0",
+                image)
 
-    def check_page_images(self, page_locator, page_image_locators):
+            if place_holder_image_path in image_src or image_size is False:
+                if image.get_attribute("title") == "":
+                    print "ERROR LOADING " + image.find_element_by_xpath("./../../../..").get_attribute("title")
+                else:
+                    print "ERROR LOADING " + image.get_attribute("title")
+
+    def check_page_images(self, page_locator, page_image_locators, place_holder_images):
 
         self.click(page_locator)
         self.check_page_exist(GlobalLocators.HEADER_LOGO)
         self.smooth_scroll_to_bottom()
         for i in range(0, len(page_image_locators)):
             page__images = self.driver.find_elements_by_css_selector(page_image_locators[i])
-            self.check_image_load(page__images)
+            self.check_image_load(page__images, place_holder_images[i])
         self.scroll_to_top()
 
     def test_trendyol(self):
@@ -88,10 +95,12 @@ class TrendyolAutomationTests(unittest.TestCase, ):
         self.login()
         for i in range(0, len(CategoryPageLocators.CATEGORY_PAGES)):
             self.check_page_images(CategoryPageLocators.CATEGORY_PAGES[i],
-                                   CategoryPageLocators.CATEGORY_PAGE_IMAGE_LOCATORS)
+                                   CategoryPageLocators.CATEGORY_PAGE_IMAGE_LOCATORS,
+                                   CategoryPageLocators.CATEGORY_PAGE_PLACE_HOLDER_IMAGE_PATHS)
 
         self.check_page_images(BoutiquePageLocators.BOUTIQUE_LOCATOR,
-                               BoutiquePageLocators.BOUTIQUE_PAGE_IMAGE_LOCATORS)
+                               BoutiquePageLocators.BOUTIQUE_PAGE_IMAGE_LOCATORS,
+                               BoutiquePageLocators.BOUTIQUE_PAGE_PLACE_HOLDER_IMAGE_PATH)
 
         self.click(ProductPageLocators.PRODUCT_LOCATOR)
         self.click(ProductPageLocators.DROPDOWN_MENU)
